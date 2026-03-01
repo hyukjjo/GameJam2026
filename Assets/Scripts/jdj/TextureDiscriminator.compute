@@ -1,0 +1,31 @@
+#pragma kernel CSMain
+
+Texture2D<float4> inputTexture;
+float4 PlayerColor1;
+float4 PlayerColor2;
+
+RWStructuredBuffer<uint> Player1outputInt;
+RWStructuredBuffer<uint> Player2outputInt;
+
+
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float width, height;
+    inputTexture.GetDimensions(width, height);
+
+    if (id.x < width && id.y < height)
+    {
+        float4 pixelValue = inputTexture[id.xy];
+
+        if (length(pixelValue.rgb - PlayerColor1.rgb) < 0.1f)
+        {
+            InterlockedAdd(Player1outputInt[0], 1);
+        }
+
+        else if (length(pixelValue.rgb - PlayerColor2.rgb) < 0.1f)
+        {
+            InterlockedAdd(Player2outputInt[0], 1);
+        }
+    }
+}
